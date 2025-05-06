@@ -1,8 +1,17 @@
-WKT,name
-"POINT (-76.6141691 39.32694280476867)",Red Emma's
-"POINT (-76.61304747116417 39.310536693089155)",209 McAllister St
-"POINT (-76.60977836441803 39.35193340375878)",York Rd and Notre Dame Ln 
-"POINT (-76.63632443558194 39.30456809627643)",1822 Pennsylvania Ave
-"POINT (-76.57607307116386 39.29388420000001)",123 N Linwood Ave
-"POINT (-76.59073027116388 39.28723848433616)",315 S Durham St
+WKT,address,zip,city,refer,name
+"POINT (-76.61304747116417 39.310536693089155)",209 McAllister St,21202,Baltimore,@bmorecommunityfridge,Baltimore Community Fridge
+"POINT (-76.60977836441803 39.35193340375878)",York Rd and Notre Dame Ln (behind Loyola),21212,Baltimore,, 
+"POINT (-76.56470047116449 39.35300581166126)",2803 Gibbons Ave,21214,Baltimore,@GibbonsCommunityFridge,
+"POINT (-76.66120687116447 39.295075397011864)",607 Ashburton St,21216,Baltimore,, 
+"POINT (-76.63632443558194 39.30456809627643)",1822 Pennsylvania Ave,21217,@TheJourneyToFeedingBaltimore,
+"POINT (-76.60982747116388 39.32694280476867)",3128 Greenmount Ave (inside Red Emma's),21218,Baltimore,,
+"POINT (-76.60949255767282 39.321541599999996)",Greenmount Ave and Whitridge Ave,21218,Baltimore,harwoodcommunity.wordpress.com/harwood-community-garden-2,
+"POINT (-76.60086525767284 39.33602319999999)",3925 Kimble Rd,21218,Baltimore,,
+"POINT (-76.65051180674672 39.28175213858204)",424 South Pulaski St,21223,Baltimore,@thefood.project;facebook.com/TheFoodProjectBaltimore,,
+"POINT (-76.57607307116386 39.29388420000001)",123 North Linwood Ave,21224,Baltimore,@LinwoodCommunityFridge,
+"POINT (-76.57302212783924 39.2802422160727)",1030 South Ellwood (behind Canton Library),21224,Baltimore,,
+"POINT (-76.63020535767284 39.2827571089005)",843 Washington Blvd,21230,Baltimore,,
+"POINT (-76.59073027116388 39.28723848433616)",315 South Durham St,21231,Baltimore,@barbiemansion_foodpantry,
+
+
 
