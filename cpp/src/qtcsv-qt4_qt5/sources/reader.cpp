@@ -47,7 +47,7 @@ public:
         Reader::AbstractProcessor& processor,
         const QString& separator,
         const QString& textDelimiter,
-        QTextCodec* codec);
+        QTextCodec* codec, QStringList* raw);
 
 private:
     // Check if file path and separator are valid
@@ -94,7 +94,7 @@ bool ReaderPrivate::read(
     Reader::AbstractProcessor& processor,
     const QString& separator,
     const QString& textDelimiter,
-    QTextCodec* codec)
+    QTextCodec* codec, QStringList* raw_lines = nullptr)
 {
     if (false == checkParams(separator)) { return false; }
 
@@ -118,6 +118,7 @@ bool ReaderPrivate::read(
     while (false == stream.atEnd())
     {
         QString line = stream.readLine();
+
         processor.preProcessRawLine(line);
         QStringList elements = ReaderPrivate::splitElements(
                   line, separator, textDelimiter, elemInfo);
@@ -133,6 +134,10 @@ bool ReaderPrivate::read(
                     result = false;
                     break;
                 }
+                // //  added for Baltimore ... for composite csv
+                else if(raw_lines && !line.isEmpty())
+                  raw_lines->push_back(line);
+
             }
             else
             {
@@ -543,7 +548,7 @@ public:
 // - QList<QStringList> - list of values (as strings) from csv-file. In case of
 // error will return empty QList<QStringList>.
 QList<QStringList> Reader::readToList(
-    const QString& filePath,
+    const QString& filePath, QStringList* raw_lines,
     const QString& separator,
     const QString& textDelimiter,
     QTextCodec* codec)
@@ -551,7 +556,7 @@ QList<QStringList> Reader::readToList(
     QFile file;
     if (false == openFile(filePath, file)) { return QList<QStringList>(); }
 
-    return readToList(file, separator, textDelimiter, codec);
+    return readToList(file, separator, textDelimiter, codec, raw_lines);
 }
 
 // Read csv-formatted data from IO Device and save it
@@ -560,10 +565,11 @@ QList<QStringList> Reader::readToList(
     QIODevice &ioDevice,
     const QString &separator,
     const QString &textDelimiter,
-    QTextCodec *codec)
+    QTextCodec *codec, QStringList* raw_lines)
 {
     ReadToListProcessor processor;
-    ReaderPrivate::read(ioDevice, processor, separator, textDelimiter, codec);
+    ReaderPrivate::read(ioDevice,
+      processor, separator, textDelimiter, codec, raw_lines);
     return processor.data;
 }
 

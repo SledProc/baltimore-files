@@ -60,7 +60,7 @@ namespace QtCSV
 
         // Read csv-file and save it's data as strings to QList<QStringList>
         static QList<QStringList> readToList(
-            const QString& filePath,
+            const QString& filePath, QStringList* raw_lines,
             const QString& separator = QString(","),
             const QString& textDelimiter = QString("\""),
             QTextCodec* codec = QTextCodec::codecForName("UTF-8"));
@@ -71,7 +71,8 @@ namespace QtCSV
             QIODevice& ioDevice,
             const QString& separator = QString(","),
             const QString& textDelimiter = QString("\""),
-            QTextCodec* codec = QTextCodec::codecForName("UTF-8"));
+            QTextCodec* codec = QTextCodec::codecForName("UTF-8"),
+            QStringList* raw_lines = nullptr);
 
         // Read csv-file and save it's data to AbstractData-based container
         // class

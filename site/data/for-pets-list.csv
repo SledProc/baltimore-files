@@ -1,4 +1,4 @@
-WKT,address,zip,city,refer,name
-"POINT (-76.52006837116488 39.261212300000004)",11 Leeway St,21222,Baltimore,@TheCantonFreePetPantry, 
-"POINT (-76.57254233000708 39.28287662361642)",819 South Ellwood Ave,21224,Baltimore,, 
+WKT,address,zip,city,refer,name,hours
+POINT (-76.52006837116488 39.261212300000004),11 Leeway St,21222,Baltimore,@TheCantonFreePetPantry,,all times
+POINT (-76.57254233000708 39.28287662361642),819 South Ellwood Ave,21224,Baltimore,,,all times
 

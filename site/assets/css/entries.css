@@ -7,3 +7,5 @@ div.entry-address { color:rgb(54, 20, 79); font-weight:900; }
 div.entry-name { color:rgb(20, 36, 179); font-size:13pt; }
 div.entry-address-comments { color:black; }
 
+span.entry-hours { display:block; margin-left:2em; }
+

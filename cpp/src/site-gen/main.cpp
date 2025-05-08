@@ -25,6 +25,8 @@
 
 struct Location_Data {
 
+ QString csv_line;
+
  QString kind;
  QString address;
  QString comments;
@@ -32,13 +34,14 @@ struct Location_Data {
  QString city;
  QString name;
  QStringList refers;
+ QStringList hours;
  r8 latitude;
  r8 longitude;
 
 };
 
 
-QString read_csv_file(QString path, QVector<Location_Data>& result)
+QString read_csv_file(QString path, QVector<Location_Data>& result, QString* for_header = nullptr)
 {
  //QString contents = load_file(path);
 
@@ -49,16 +52,25 @@ QString read_csv_file(QString path, QVector<Location_Data>& result)
  if(file_name.endsWith("-list"))
    file_name.chop(5);
 
- QList<QStringList> lines = QtCSV::Reader::readToList(path);
+ QStringList raw_lines;
+ QList<QStringList> lines = QtCSV::Reader::readToList(path, &raw_lines);
 
  lines.takeFirst(); //  header
 
+ if(for_header)
+   *for_header = raw_lines.first();
+
+ raw_lines.takeFirst();
+
+ u2 row = 0;
  for(QStringList qsl : lines)
  {
   if(qsl.isEmpty())
     continue;
 
   Location_Data loc;
+  loc.csv_line = raw_lines[row];
+  ++row;
 
   loc.kind = file_name;
 
@@ -105,6 +117,98 @@ QString read_csv_file(QString path, QVector<Location_Data>& result)
        r = r.simplified();
      break;
    case 6: loc.name = field; break;
+   case 7:
+    {
+     if(field.isEmpty() || field.toLower() == "all times")
+       loc.hours = QStringList {"All times"};
+     else if(field == "N/A")
+       break;
+     else
+     {
+      loc.hours = field.split(";", Qt::SkipEmptyParts);
+      QStringList comments;
+      for(QString& h_row : loc.hours)
+      {
+       QString h = h_row.simplified();
+       static QMap<QString, QString> days {
+         { "Mon", "Monday" },
+         { "Tue", "Tuesday" },
+         { "Wed", "Wednesday" },
+         { "Thu", "Thursday" },
+         { "Fri", "Friday" },
+         { "Sat", "Saturday" },
+         { "Sun", "Sunday" },
+         { "M-F", "Monday to Friday" },
+       };
+
+       QString comment;
+       {
+        QRegularExpression rx("(\\S+)\\s*\\((.+)\\)");
+        QRegularExpressionMatch match = rx.match(h);
+        if(match.hasMatch())
+        {
+         h = match.captured(1);
+         comment = match.captured(2);
+        }
+       }
+
+       if(!comment.isEmpty())
+         comments.push_back(comment);
+
+       QString time_component;
+       {
+        QRegularExpression rx("(.*)/([^-]+)-([^-]+)");
+        QRegularExpressionMatch match = rx.match(h);
+        if(match.hasMatch())
+        {
+         h = match.captured(1);
+
+         QString tc1, tc2;
+         tc1 = match.captured(2);
+         tc2 = match.captured(3);
+
+         if(tc1.contains("."))
+           tc1 = tc1.replace('.', ':') + "AM";
+         else
+           tc1 = tc1 + "PM";
+
+         if(tc2.contains("."))
+           tc2 = tc2.replace('.', ':') + "AM";
+         else
+           tc2 = tc2 + "PM";
+
+         time_component = tc1 + "&ndash;" + tc2;
+        }
+       }
+
+       if(days.contains(h))
+         h = days[h];
+       else
+       {
+        QStringList longs;
+        static QByteArray days_short = "MTWRFSU"_qt.toLatin1();
+        static QStringList days_long = "Monday Tuesday Wednesday "
+          "Thursday Friday Saturday Sunday"_qt.split(' ');
+
+        for(u1 i = 0; i < 7; ++i)
+        {
+         if(h.contains(QChar::fromLatin1(days_short[i])))
+           longs.push_back(days_long[i]);
+        }
+        h = longs.join(", ");
+       }
+
+       h_row = h + " " + time_component;
+
+      }
+      if(comments.isEmpty())
+        loc.hours.push_back("");
+      else
+        loc.hours.push_back("(%1)"_qt.arg(comments.join("; ")));
+     }
+    }
+    break;
+
    default: break;
    }
   }
@@ -117,10 +221,14 @@ QString read_csv_file(QString path, QVector<Location_Data>& result)
 
 void read_csv_files(QDir qd)
 {
+ QString csv_header;
+
  QStringList types;
  types << "*.csv";
 
  QMap<QString, QVector<Location_Data>> data_by_kind;
+
+ QVector<QPair<const Location_Data*, QString>> composite_data;
 
  {
   QDirIterator it(qd.path(), types);
@@ -130,11 +238,21 @@ void read_csv_files(QDir qd)
 
    QVector<Location_Data> data;
 
-   QString kind = read_csv_file(path, data);
+   QString kind = read_csv_file(path, data,
+     csv_header.isEmpty()? &csv_header : nullptr);
 
    data_by_kind[kind] = data;
+
+//   QVector<Location_Data>& ds = data_by_kind[kind];
+
+//   for(Location_Data& loc : ds)
+//   {
+//    composite_data.push_back(QPair<const Location_Data*, QStringList>{&loc, {}});
+//   }
   }
  }
+
+
 
 
  QMap<QString, QString> out_text;
@@ -146,10 +264,17 @@ void read_csv_files(QDir qd)
  static QString instagram_refer_line = "<div class='entry-refer instagram'>Instagram: %1</div>";
  static QString facebook_refer_line = "<div class='entry-refer facebook'>"
    "Facebook: <a href='http://www.%1'>http://www.%1</a></div>";
+ static QString twitter_refer_line = "<div class='entry-refer twitter'>"
+   "Twitter: <a href='http://www.%1'>http://www.%1</a></div>";
  static QString web_refer_line = "<div class='entry-refer web'>"
-   "Web Site: <a href='http://%1'>http://%1</a></div>";
+   "Web Site: <a href='%1'>%1</a></div>";
  static QString other_refer_line = "<div class='entry-refer see'> See: %1</div>";
 
+ static QString phone_refer_line = "<div class='entry-refer phone'> Phone: %1</div>";
+ static QString email_refer_line = "<div class='entry-refer phone'> Email: %1</div>";
+
+ static QString hours_start_line = "<div class='entry-hours'> Hours: %1";
+ static QString hours_line = "\n<span class='entry-hours'>%1</span>";
 
  static QString html_wrap = R"_(
    <!-- csv row %1 -->
@@ -180,6 +305,11 @@ void read_csv_files(QDir qd)
     if(!loc.comments.isEmpty())
       lines += comments_line.arg(loc.comments);
 
+    if(loc.name.startsWith("Community Cupboard"))
+    {
+     qDebug() << loc.name;
+    }
+
     for(QString r : loc.refers)
     {
      if(r.startsWith("@"))
@@ -188,18 +318,77 @@ void read_csv_files(QDir qd)
      else if(r.startsWith("facebook.com"))
        lines << facebook_refer_line.arg(r);
 
+     else if(r.startsWith("twitter.com"))
+       lines << twitter_refer_line.arg(r);
+
      else if(r.startsWith("http"))
        lines << web_refer_line.arg(r);
+
+     else if(r.startsWith("www"))
+       lines << web_refer_line.arg("http://" + r);
+
+//     else if(r.startsWith("http"))
+//       lines << web_refer_line.arg(r);
+
+     else if(r.startsWith("email:"))
+       lines << email_refer_line.arg(r.mid(6));
+
+     else if(r.startsWith("#"))
+       lines << phone_refer_line.arg(r.mid(1));
 
      else
        lines << other_refer_line.arg(r);
     }
 
-    out_qts << html_wrap.arg(count).arg(lines.join("\n"));
+    QStringList qsl = loc.hours;
+    QString hours_comment = qsl.last();
+    if(hours_comment.isEmpty())
+      qsl.takeLast();
+    if(qsl.size() > 1)
+    {
+     lines << hours_start_line.arg("");
+     for(QString h : qsl)
+     {
+      lines << hours_line.arg(h);
+     }
+     lines << "\n</div>";
+    }
+    else
+      lines << hours_start_line.arg(qsl.first());
+
+    QString html = html_wrap.arg(count).arg(lines.join("\n"));
+    out_qts << html;
+
+    composite_data.push_back({&loc, html});
    }
 
   }
  }
+
+ std::sort(composite_data.begin(), composite_data.end(), [](auto& lhs, auto& rhs)
+ {
+  if(lhs.first->zip == rhs.first->zip)
+  {
+   if(lhs.first->city == rhs.first->city)
+     return lhs.first->address < rhs.first->address;
+   return lhs.first->city < rhs.first->city;
+  }
+
+  return lhs.first->zip < rhs.first->zip;
+ });
+
+ QString aggregate;
+
+ {
+  QTextStream qts(&aggregate);
+  for(auto& pr : composite_data)
+  {
+   qts << pr.second;
+  }
+ }
+
+ out_text["aggregate"] = aggregate;
+
 
  qd.cd("csv-to-html");
  {
@@ -212,6 +401,22 @@ void read_csv_files(QDir qd)
    save_file(outfile, it.value());
   }
 
+ }
+
+ qd.cdUp();
+ qd.cd("aggregate");
+ {
+  QString composite;
+  QTextStream qts(&composite);
+  qts << csv_header << "\n";
+  for(auto& pr: composite_data)
+  {
+   if(pr.first->csv_line.isEmpty())
+     qts << "?????\n";
+   else
+     qts << pr.first->csv_line << "\n";
+  }
+  save_file(qd.absoluteFilePath("aggregate-list.csv"), composite);
  }
 
 }
@@ -233,9 +438,30 @@ QString process_file(QDir qd, QString path)
 
   QString key = m.captured(1);
 
-  qDebug() << "key = " << key;
 
-  QString insert = load_file(qd.absoluteFilePath(key + ".htm"));
+  if(key == "pantry-data")
+    qDebug() << "key = " << key;
+
+  QFileInfo qfi(qd, key + ".htm");
+
+//  if(!qfi.exists())
+  {
+   QDir csv_dir = qd;
+   csv_dir.cdUp();
+   csv_dir.cd("data");
+   csv_dir.cd("csv-to-html");
+   copy_file_to_folder(csv_dir.absoluteFilePath(key + ".htm"), qd.absolutePath());
+  }
+
+  QString insert = load_file(qfi.absoluteFilePath());
+
+  if(insert.isEmpty())
+  {
+   if(qfi.exists())
+     insert = " [empty file]: %1 "_qt.arg(qfi.fileName());
+   else
+     insert = " [missing file]: %1 "_qt.arg(qfi.fileName());
+  }
 
   inserts.push_back({m.captured(), insert});
  }

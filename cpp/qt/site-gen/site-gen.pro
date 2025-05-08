@@ -32,6 +32,18 @@ HEADERS += \
   $$SRC_DIR/qtcsv-qt4_qt5/sources/contentiterator.h \
   $$SRC_DIR/qtcsv-qt4_qt5/sources/filechecker.h
 
+message($$SRC_DIR/qtcsv-qt4_qt5/include/qtcsv/reader.h)
+
+
+HEADERS += \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/reader.h \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/abstractdata.h \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/qtcsv_global.h \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/reader.h \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/stringdata.h \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/variantdata.h \
+  $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include/qtcsv/writer.h \
+
 
 SOURCES +=  \
   $$SRC_DIR/main.cpp \
