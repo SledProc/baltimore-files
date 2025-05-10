@@ -439,12 +439,13 @@ QString process_file(QDir qd, QString path)
   QString key = m.captured(1);
 
 
-  if(key == "pantry-data")
-    qDebug() << "key = " << key;
+//  if(key == "pantry-data")
+//    qDebug() << "key = " << key;
 
   QFileInfo qfi(qd, key + ".htm");
-
 //  if(!qfi.exists())
+
+  if(key.endsWith("-data"))
   {
    QDir csv_dir = qd;
    csv_dir.cdUp();
@@ -496,7 +497,11 @@ int main(int argc, char *argv[])
 
   QFileInfo qfi(path);
 
+
   QString o_path = oqd.absoluteFilePath(qfi.fileName());
+
+  if(path.endsWith("fridge-map.html"))
+    qDebug() << o_path;
 
   save_file(o_path, c);
  }
