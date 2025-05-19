@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
 
   QString o_path = oqd.absoluteFilePath(qfi.fileName());
 
-  if(path.endsWith("fridge-map.html"))
+  if(path.startsWith("refugee"))
     qDebug() << o_path;
 
   save_file(o_path, c);

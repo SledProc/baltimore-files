@@ -16,7 +16,7 @@ SRC_DIR = $$SRC_ROOT_DIR/$$PROJECT_NAME
 
 
 DEFINES += ROOT_DIR=\\\"$$ROOT_DIR\\\"
-DEFINES += SITE_ROOT=\\\"$$ROOT_DIR/site\\\"
+DEFINES += SITE_ROOT=\\\"$$ROOT_DIR/docs\\\"
 
 
 INCLUDEPATH += $$SRC_ROOT_DIR/qtcsv-qt4_qt5/include
@@ -32,7 +32,6 @@ HEADERS += \
   $$SRC_DIR/qtcsv-qt4_qt5/sources/contentiterator.h \
   $$SRC_DIR/qtcsv-qt4_qt5/sources/filechecker.h
 
-message($$SRC_DIR/qtcsv-qt4_qt5/include/qtcsv/reader.h)
 
 
 HEADERS += \
