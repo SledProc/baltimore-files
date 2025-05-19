@@ -98,7 +98,7 @@ QString read_csv_file(QString path, QVector<Location_Data>& result, QString* for
 
    case 2:
     {
-     QRegularExpression rx("(.+)\\(.*\\)");
+     QRegularExpression rx("(.+)\\((.*)\\)");
      QRegularExpressionMatch match = rx.match(field);
      if(match.hasMatch())
      {
